@@ -21,7 +21,7 @@ variable "ami_id" {
   default = "ami-0ab193018f3e9351b"
 }
 variable "apache_ami" {
-  type = string
+  type    = string
   default = "ami-0507f77897697c4ba"
 }
 variable "comsul_servers_count" {
@@ -62,19 +62,19 @@ resource "aws_launch_template" "sandcastle_consul" {
   instance_type          = var.instance_type
   key_name               = var.ssh_key_name
   vpc_security_group_ids = [var.security_group_id]
-  
+
   iam_instance_profile {
     name = var.iam_instance_profile_name
   }
-  
+
   metadata_options {
     http_tokens = "optional"
   }
-  
+
   user_data = base64encode(templatefile("./startup.sh", {
     consul_license = var.consul_license
-    consul_version        = var.consul_version,
-    servers_count = var.comsul_servers_count
+    consul_version = var.consul_version,
+    servers_count  = var.comsul_servers_count
   }))
 }
 
@@ -95,7 +95,7 @@ resource "aws_autoscaling_group" "sandcastle_consul" {
     value               = "sandcastle_consul"
     propagate_at_launch = true
   }
-  
+
   tag {
     key                 = "consul"
     value               = "join"
@@ -109,7 +109,19 @@ resource "aws_launch_template" "apache_servers" {
   instance_type          = var.instance_type
   key_name               = var.ssh_key_name
   vpc_security_group_ids = [var.security_group_id]
-  user_data = base64encode(templatefile("./startup-apache.sh", {}))
+
+  iam_instance_profile {
+    name = var.iam_instance_profile_name
+  }
+
+  metadata_options {
+    http_tokens = "optional"
+  }
+
+  user_data = base64encode(templatefile("./startup-apache.sh", {
+    consul_version = var.consul_version,
+    consul_license = var.consul_license
+  }))
 }
 
 resource "aws_autoscaling_group" "apache_servers" {
