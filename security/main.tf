@@ -143,6 +143,14 @@ resource "aws_security_group" "sandcastle_consul" {
     description = "Access Apache Servers via local IP"
   }
 
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = [var.local_ip]
+    description = "Access Express Servers via local IP"
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
