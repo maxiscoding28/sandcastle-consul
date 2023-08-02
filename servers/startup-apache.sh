@@ -58,26 +58,16 @@ server     = false
 datacenter = "consul-dc-a"
 primary_datacenter = "consul-dc-a"
 node_name="apache-$INSTANCE_ID"
-
-ui_config {
-  enabled = true
-}
-
-# Gossip Encryption - generate key using consul keygen
 encrypt            = "pCOEKgL2SYHmDoFJqnolFUTJi7Vy+Qwyry04WIZUupc="
 data_dir           = "/opt/consul/data"
-
-# Agent Network Configuration
 client_addr    = "0.0.0.0"
-bind_addr      = "0.0.0.0"
-advertise_addr = "{{ GetPublicIP }}"
-
 retry_join = ["provider=aws tag_key=consul tag_value=join region=us-west-2"]
-
 connect {
   enabled = true
 }
-
+ui_config {
+  enabled = true
+}
 acl {
   enabled = true
   default_policy = "allow"
