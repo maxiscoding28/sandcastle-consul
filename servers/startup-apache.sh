@@ -35,14 +35,14 @@ Description="HashiCorp Consul - A service mesh solution"
 Documentation=https://www.consul.io/
 Requires=network-online.target
 After=network-online.target
-ConditionFileNotEmpty=/etc/consul.d/config.hcl
+ConditionFileNotEmpty=/etc/consul.d/agent.hcl
 
 [Service]
 Type=notify
 User=consul
 Group=consul
 EnvironmentFile=/etc/consul.d/env
-ExecStart=/usr/bin/consul agent -config-file=/etc/consul.d/config.hcl
+ExecStart=/usr/bin/consul agent -config-dir=/etc/consul.d/
 ExecReload=/usr/bin/consul reload
 KillMode=process
 Restart=on-failure
@@ -52,7 +52,7 @@ LimitNOFILE=65536
 WantedBy=multi-user.target
 EOF
 
-cat > /etc/consul.d/config.hcl << EOF
+cat > /etc/consul.d/agent.hcl << EOF
 log_level  = "INFO"
 server     = false
 datacenter = "consul-dc-a"
@@ -75,11 +75,17 @@ advertise_addr = "{{ GetPublicIP }}"
 retry_join = ["provider=aws tag_key=consul tag_value=join region=us-west-2"]
 
 connect {
-  enabled = false
+  enabled = true
+}
+
+acl {
+  enabled = true
+  default_policy = "allow"
+  down_policy = "extend-cache"
 }
 EOF
 
-cat > /etc/consul.d/service-config.hcl << EOF
+cat > /etc/consul.d/service.hcl << EOF
 node_name = "$INSTANCE_ID"
 service {
     name = "web-server-$INSTANCE_ID"
@@ -95,6 +101,13 @@ service {
 }
 EOF
 
+# Create bash helper commands
+cat > /etc/profile.d/consul.sh << EOF
+export PS1="\[\033[0;31m\]\u@\[\033[0m\]$INSTANCE_ID "
+alias nukeconsul="sudo rm -rf /opt/consul/*"
+alias cl="journalctl -fu consul"
+alias pc="cat /etc/consul.d/config.hcl"
+alias vc="sudo vim /etc/consul.d/config.hcl"
+EOF
+
 systemctl start consul
-sleep 5
-consul services register /etc/consul.d/service-config.hcl

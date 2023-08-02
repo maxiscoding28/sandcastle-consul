@@ -79,7 +79,13 @@ retry_join = ["provider=aws tag_key=consul tag_value=join region=us-west-2"]
 bootstrap_expect = ${servers_count}
 
 connect {
-  enabled = false
+  enabled = true
+}
+
+acl {
+  enabled = true
+  default_policy = "allow"
+  down_policy = "extend-cache"
 }
 EOF
 
@@ -89,6 +95,7 @@ export PS1="\[\033[0;31m\]\u@\[\033[0m\]$INSTANCE_ID "
 alias nukeconsul="sudo rm -rf /opt/consul/*"
 alias cl="journalctl -fu consul"
 alias pc="cat /etc/consul.d/config.hcl"
+alias vc="sudo vim /etc/consul.d/config.hcl"
 EOF
 
 systemctl start consul
