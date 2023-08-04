@@ -6,8 +6,26 @@ usermod -a -G systemd-journal consul
 echo 'consul ALL=(ALL:ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
 
 yum update
-yum install -y httpd
-service httpd start
+yum upgrade
+yum install -y nodejs
+mkdir /home/consul/my-express-app
+cd /home/consul/my-express-app
+npm init -y
+npm install express --save
+cat > /home/consul/my-express-app/index.js << EOF
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+  res.send('Hello, Express!');
+});
+
+app.listen(port, () => {
+  console.log(\`Server running on port \$${port}\`);
+});
+EOF
+nohup node /home/consul/my-express-app/index.js > /home/consul/app.log 2>&1 &
 
 curl --silent -Lo /tmp/consul.zip https://releases.hashicorp.com/consul/${consul_version}/consul_${consul_version}_linux_amd64.zip
 unzip /tmp/consul.zip
@@ -57,11 +75,12 @@ log_level  = "INFO"
 server     = false
 datacenter = "consul-dc-a"
 primary_datacenter = "consul-dc-a"
-node_name="apache-$INSTANCE_ID"
+node_name="express-$INSTANCE_ID"
 encrypt            = "pCOEKgL2SYHmDoFJqnolFUTJi7Vy+Qwyry04WIZUupc="
 data_dir           = "/opt/consul/data"
 client_addr    = "0.0.0.0"
 retry_join = ["provider=aws tag_key=consul tag_value=join region=us-west-2"]
+leave_on_terminate = false
 connect {
   enabled = true
 }
@@ -79,14 +98,13 @@ cat > /etc/consul.d/service.hcl << EOF
 node_name = "$INSTANCE_ID"
 service {
     name = "web-server-$INSTANCE_ID"
-    tags = ["apache", "$INSTANCE_ID"]
-    port = 80
+    tags = ["express", "$INSTANCE_ID"]
+    port = 3000
     check = {
-        id = "web"
-        name = "Check web on port 80"
-        tcp = "localhost:80"
+        name = "Express Server Available on Port 3000"
+        tcp = "localhost:3000"
         interval = "10s"
-        timeout = "1s"
+        timeout = "2s"
     }
 }
 EOF
@@ -96,8 +114,8 @@ cat > /etc/profile.d/consul.sh << EOF
 export PS1="\[\033[0;31m\]\u@\[\033[0m\]$INSTANCE_ID "
 alias nukeconsul="sudo rm -rf /opt/consul/*"
 alias cl="journalctl -fu consul"
-alias pc="cat /etc/consul.d/config.hcl"
-alias vc="sudo vim /etc/consul.d/config.hcl"
+alias pc="cat /etc/consul.d/*"
+alias vc="sudo vim /etc/consul.d/agent.hcl"
 EOF
 
 systemctl start consul
