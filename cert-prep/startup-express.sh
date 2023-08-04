@@ -114,8 +114,8 @@ cat > /etc/profile.d/consul.sh << EOF
 export PS1="\[\033[0;31m\]\u@\[\033[0m\]$INSTANCE_ID "
 alias nukeconsul="sudo rm -rf /opt/consul/*"
 alias cl="journalctl -fu consul"
-alias pc="cat /etc/consul.d/config.hcl"
-alias vc="sudo vim /etc/consul.d/*"
+alias pc="cat /etc/consul.d/*"
+alias vc="sudo vim /etc/consul.d/agent.hcl"
 EOF
 
 systemctl start consul

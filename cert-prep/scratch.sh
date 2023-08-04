@@ -18,5 +18,3 @@ curl \
     --request PUT \
     --data @service-register-payload.json \
     10.0.2.109:8500/v1/agent/service/register
-  
-  
