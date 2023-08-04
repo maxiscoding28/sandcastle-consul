@@ -79,7 +79,7 @@ cat > /etc/consul.d/service.hcl << EOF
 node_name = "$INSTANCE_ID"
 service {
     name = "web-server-$INSTANCE_ID"
-    tags = ["prod", "webapp", "$INSTANCE_ID"]
+    tags = ["apache", "$INSTANCE_ID"]
     port = 80
     check = {
         id = "web"
