@@ -20,7 +20,7 @@ variable "ami_id" {
   type    = string
   default = "ami-0ab193018f3e9351b"
 }
-variable "apache_ami" {
+variable "client_ami" {
   type    = string
   default = "ami-0507f77897697c4ba"
 }
@@ -29,6 +29,10 @@ variable "comsul_servers_count" {
   default = 1
 }
 variable "apache_servers_count" {
+  type    = number
+  default = 1
+}
+variable "express_servers_count" {
   type    = number
   default = 1
 }
@@ -105,7 +109,7 @@ resource "aws_autoscaling_group" "sandcastle_consul" {
 
 resource "aws_launch_template" "apache_servers" {
   name_prefix            = "apache_servers"
-  image_id               = var.apache_ami
+  image_id               = var.client_ami
   instance_type          = var.instance_type
   key_name               = var.ssh_key_name
   vpc_security_group_ids = [var.security_group_id]
@@ -139,6 +143,46 @@ resource "aws_autoscaling_group" "apache_servers" {
   tag {
     key                 = "Name"
     value               = "apache_server"
+    propagate_at_launch = true
+  }
+}
+
+resource "aws_launch_template" "express_servers" {
+  name_prefix            = "express_servers"
+  image_id               = var.client_ami
+  instance_type          = var.instance_type
+  key_name               = var.ssh_key_name
+  vpc_security_group_ids = [var.security_group_id]
+
+  iam_instance_profile {
+    name = var.iam_instance_profile_name
+  }
+
+  metadata_options {
+    http_tokens = "optional"
+  }
+
+  user_data = base64encode(templatefile("./startup-express.sh", {
+    consul_version = var.consul_version,
+    consul_license = var.consul_license
+  }))
+}
+
+resource "aws_autoscaling_group" "express_servers" {
+  name                = "express_servers"
+  vpc_zone_identifier = [var.subnet_id_a, var.subnet_id_b]
+  desired_capacity    = var.express_servers_count
+  max_size            = 5
+  min_size            = 0
+
+  launch_template {
+    id      = aws_launch_template.express_servers.id
+    version = "$Latest"
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "express_server"
     propagate_at_launch = true
   }
 }
