@@ -95,7 +95,7 @@ acl {
 EOF
 
 cat > /etc/consul.d/service.hcl << EOF
-node_name = "$INSTANCE_ID"
+node_name = "express-$INSTANCE_ID"
 service {
     name = "web-server-$INSTANCE_ID"
     tags = ["express", "$INSTANCE_ID"]
