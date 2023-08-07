@@ -97,7 +97,8 @@ EOF
 cat > /etc/consul.d/service.hcl << EOF
 node_name = "express-$INSTANCE_ID"
 service {
-    name = "web-server-$INSTANCE_ID"
+    id = "express-server-$INSTANCE_ID"
+    name = "express-server"
     tags = ["express", "$INSTANCE_ID"]
     port = 3000
     check = {
