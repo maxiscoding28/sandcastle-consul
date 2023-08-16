@@ -28,11 +28,7 @@ variable "comsul_servers_count" {
   type    = number
   default = 1
 }
-variable "red_servers_count" {
-  type    = number
-  default = 1
-}
-variable "blue_servers_count" {
+variable "client_servers_count" {
   type    = number
   default = 1
 }
@@ -123,7 +119,7 @@ resource "aws_launch_template" "red_servers" {
   }
 
   user_data = base64encode(templatefile("./startup-express.sh", {
-    server_color = "red"
+    server_color   = "red"
     consul_version = var.consul_version,
     consul_license = var.consul_license
   }))
@@ -132,7 +128,7 @@ resource "aws_launch_template" "red_servers" {
 resource "aws_autoscaling_group" "red_servers" {
   name                = "red_servers"
   vpc_zone_identifier = [var.subnet_id_a, var.subnet_id_b]
-  desired_capacity    = var.red_servers_count
+  desired_capacity    = var.client_servers_count
   max_size            = 5
   min_size            = 0
 
@@ -164,7 +160,7 @@ resource "aws_launch_template" "blue_servers" {
   }
 
   user_data = base64encode(templatefile("./startup-express.sh", {
-    server_color = "blue"
+    server_color   = "blue"
     consul_version = var.consul_version,
     consul_license = var.consul_license
   }))
@@ -173,7 +169,7 @@ resource "aws_launch_template" "blue_servers" {
 resource "aws_autoscaling_group" "blue_servers" {
   name                = "blue_servers"
   vpc_zone_identifier = [var.subnet_id_a, var.subnet_id_b]
-  desired_capacity    = var.red_servers_count
+  desired_capacity    = var.client_servers_count
   max_size            = 5
   min_size            = 0
 

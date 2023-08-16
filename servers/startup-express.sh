@@ -79,11 +79,11 @@ cat > /etc/consul.d/service.hcl << EOF
 node_name = "express-$INSTANCE_ID"
 service {
     id = "${server_color}-server-$INSTANCE_ID"
-    name = "${server_color}-server"
+    name = "express-server"
     tags = ["express", "$INSTANCE_ID"]
     port = 3000
     check {
-        name = "${server_color} Server Available on Port 3000"
+        name = "Express Server Available on Port 3000"
         tcp = "localhost:3000"
         interval = "10s"
         timeout = "2s"
@@ -120,7 +120,7 @@ app.get('/', (req, res) => {
       <head>
         <style>
           body {
-            background-color: ${server_color};
+            background-color: red;
             margin: 0;
             padding: 0;
             display: flex;
