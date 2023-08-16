@@ -8,24 +8,6 @@ echo 'consul ALL=(ALL:ALL) NOPASSWD: ALL' | sudo EDITOR='tee -a' visudo
 yum update
 yum upgrade
 yum install -y nodejs
-mkdir /home/consul/my-express-app
-cd /home/consul/my-express-app
-npm init -y
-npm install express --save
-cat > /home/consul/my-express-app/index.js << EOF
-const express = require('express');
-const app = express();
-const port = 3000;
-
-app.get('/', (req, res) => {
-  res.send('Hello, Express!');
-});
-
-app.listen(port, () => {
-  console.log(\`Server running on port \$${port}\`);
-});
-EOF
-nohup node /home/consul/my-express-app/index.js > /home/consul/app.log 2>&1 &
 
 curl --silent -Lo /tmp/consul.zip https://releases.hashicorp.com/consul/${consul_version}/consul_${consul_version}_linux_amd64.zip
 unzip /tmp/consul.zip
@@ -75,12 +57,11 @@ log_level  = "INFO"
 server     = false
 datacenter = "consul-dc-a"
 primary_datacenter = "consul-dc-a"
-node_name="express-$INSTANCE_ID"
+node_name="${server_color}-$INSTANCE_ID"
 encrypt            = "pCOEKgL2SYHmDoFJqnolFUTJi7Vy+Qwyry04WIZUupc="
 data_dir           = "/opt/consul/data"
 client_addr    = "0.0.0.0"
 retry_join = ["provider=aws tag_key=consul tag_value=join region=us-west-2"]
-leave_on_terminate = false
 connect {
   enabled = true
 }
@@ -97,12 +78,12 @@ EOF
 cat > /etc/consul.d/service.hcl << EOF
 node_name = "express-$INSTANCE_ID"
 service {
-    id = "express-server-$INSTANCE_ID"
-    name = "express-server"
+    id = "${server_color}-server-$INSTANCE_ID"
+    name = "${server_color}-server"
     tags = ["express", "$INSTANCE_ID"]
     port = 3000
-    check = {
-        name = "Express Server Available on Port 3000"
+    check {
+        name = "${server_color} Server Available on Port 3000"
         tcp = "localhost:3000"
         interval = "10s"
         timeout = "2s"
@@ -118,5 +99,52 @@ alias cl="journalctl -fu consul"
 alias pc="cat /etc/consul.d/*"
 alias vc="sudo vim /etc/consul.d/agent.hcl"
 EOF
+
+
+# If Apache-Server, service start httpd
+# If Express-Server, cat out index.js and start
+# Pass name in based on custom type
+
+mkdir /home/consul/my-express-app
+cd /home/consul/my-express-app
+npm init -y
+npm install express --save
+cat > /home/consul/my-express-app/index.js << EOF
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+  const htmlResponse = \`
+    <html>
+      <head>
+        <style>
+          body {
+            background-color: ${server_color};
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 24px;
+            color: white;
+          }
+        </style>
+      </head>
+      <body>
+        <div>Hello, Express!</div>
+      </body>
+    </html>
+  \`;
+
+  res.send(htmlResponse);
+});
+
+app.listen(port, () => {
+  console.log(\`Server running on port \$${port}\`);
+});
+EOF
+nohup node /home/consul/my-express-app/index.js > /home/consul/app.log 2>&1 &
 
 systemctl start consul
