@@ -22,7 +22,7 @@ This infrastructure includes:
     - [A launch template for Consul nodes](https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html)
         - Each server instance generated from this template contains a userdata script [./startup.sh](./servers/startup.sh) that generates the neccessary configuration files for running Consul as well as some useful aliases.
     - [An autoscaling group](https://docs.aws.amazon.com/autoscaling/ec2/userguide/auto-scaling-groups.html)
-    - [A launch template and autoscaling group for Apache servers](https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html) (for service discovery)
+    - [A launch template and autoscaling group for Express servers](https://docs.aws.amazon.com/autoscaling/ec2/userguide/launch-templates.html) (for service discovery)
 
 ## Okay, What Do I Need To Do To Set This Up? 😕
 #### Prerequisties

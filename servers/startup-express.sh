@@ -90,7 +90,7 @@ node_name = "express-$INSTANCE_ID"
 service {
     id = "${server_color}-server-$INSTANCE_ID"
     name = "express-server"
-    tags = ["express", "$INSTANCE_ID", $server_color]
+    tags = ["express", "$INSTANCE_ID", "${server_color}"]
     port = 3000
     check {
         name = "Express Server Available on Port 3000"
@@ -110,11 +110,6 @@ alias pc="cat /etc/consul.d/*"
 alias vc="sudo vim /etc/consul.d/agent.hcl"
 EOF
 
-
-# If Apache-Server, service start httpd
-# If Express-Server, cat out index.js and start
-# Pass name in based on custom type
-
 mkdir /home/consul/my-express-app
 cd /home/consul/my-express-app
 npm init -y
@@ -125,30 +120,9 @@ const app = express();
 const port = 3000;
 
 app.get('/', (req, res) => {
-  const htmlResponse = \`
-    <html>
-      <head>
-        <style>
-          body {
-            background-color: red;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-size: 24px;
-            color: white;
-          }
-        </style>
-      </head>
-      <body>
-        <div>Hello, Express!</div>
-      </body>
-    </html>
-  \`;
+  const response = "Hello from the ${server_color} server!"
 
-  res.send(htmlResponse);
+  res.send(response);
 });
 
 app.listen(port, () => {
