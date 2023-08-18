@@ -85,6 +85,7 @@ resource "aws_security_group" "sandcastle_consul" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.local_ip]
+    description = "SSH from local IP"
   }
 
   ingress {
@@ -96,10 +97,19 @@ resource "aws_security_group" "sandcastle_consul" {
   }
 
   ingress {
+    from_port   = 8600
+    to_port     = 8600
+    protocol    = "udp"
+    cidr_blocks = [var.local_ip]
+    description = "DNS queries to consul from local on UDP"
+  }
+
+  ingress {
     from_port = 8600
     to_port   = 8600
     protocol  = "udp"
     self      = true
+    description = "Intra-cluster DNS queries"
   }
 
   ingress {
@@ -115,7 +125,7 @@ resource "aws_security_group" "sandcastle_consul" {
     to_port     = 8302
     protocol    = "udp"
     self        = true
-    description = "Intra cluster, inter cluster WAN on UDP"
+    description = "Intra cluster LAN, inter cluster WAN on UDP"
   }
 
   ingress {
@@ -131,16 +141,7 @@ resource "aws_security_group" "sandcastle_consul" {
     to_port     = 8500
     protocol    = "tcp"
     cidr_blocks = [var.local_ip]
-    description = "Access Consul UI from local"
-  }
-
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = [var.local_ip]
-    description = "Access Apache Servers via local IP"
+    description = "Access Consul UI and API from local IP"
   }
 
   ingress {

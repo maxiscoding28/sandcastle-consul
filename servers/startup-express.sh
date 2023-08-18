@@ -9,6 +9,16 @@ yum update
 yum upgrade
 yum install -y nodejs
 
+curl --silent -Lo /tmp/envconsul.zip https://releases.hashicorp.com/envconsul/0.13.2/envconsul_0.13.2_linux_amd64.zip
+unzip /tmp/envconsul.zip
+mv envconsul /usr/bin
+rm -f /tmp/envconsul.zip
+
+curl --silent -Lo /tmp/consul-template.zip https://releases.hashicorp.com/consul-template/0.33.0/consul-template_0.33.0_linux_amd64.zip
+unzip /tmp/consul-template.zip
+mv consul-template /usr/bin
+rm -f /tmp/consul-template.zip
+
 curl --silent -Lo /tmp/consul.zip https://releases.hashicorp.com/consul/${consul_version}/consul_${consul_version}_linux_amd64.zip
 unzip /tmp/consul.zip
 mv consul /usr/bin
@@ -80,7 +90,7 @@ node_name = "express-$INSTANCE_ID"
 service {
     id = "${server_color}-server-$INSTANCE_ID"
     name = "express-server"
-    tags = ["express", "$INSTANCE_ID"]
+    tags = ["express", "$INSTANCE_ID", $server_color]
     port = 3000
     check {
         name = "Express Server Available on Port 3000"
